@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>Anime Decision Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0a0f;
+  --bg-panel:#12131c;
+  --bg-card:#171826;
+  --line: rgba(255,255,255,0.08);
+  --violet:#7c5cff;
+  --violet-dim: rgba(124,92,255,0.16);
+  --coral:#ff4d6d;
+  --teal:#3ed9c5;
+  --gold:#ffb85c;
+  --ink:#f2f0ea;
+  --ink-dim:#8d8fa3;
+  --ink-faint:#585a6e;
+  --radius: 18px;
+  --font-display:'Space Grotesk', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html,body{height:100%;}
+body{
+  background: radial-gradient(ellipse 120% 80% at 50% -10%, #1a1530 0%, var(--bg) 55%);
+  color:var(--ink);
+  font-family:var(--font-body);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+}
+button{font-family:inherit; cursor:pointer; border:none; background:none; color:inherit;}
+a{color:inherit;}
+::selection{background:var(--violet); color:#fff;}
+
+.app{
+  max-width:520px;
+  margin:0 auto;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+}
+
+/* ---------- HEADER ---------- */
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:18px 20px 10px;
+}
+.brand{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+}
+.brand-mark{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:18px;
+  letter-spacing:-0.02em;
+}
+.brand-mark span{color:var(--violet);}
+.brand-tag{
+  font-family:var(--font-mono);
+  font-size:9px;
+  letter-spacing:0.12em;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+}
+.icon-btn{
+  width:38px; height:38px;
+  border-radius:12px;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center;
+  position:relative;
+  transition: transform .15s ease, border-color .15s ease;
+}
+.icon-btn:active{ transform:scale(0.92); }
+.icon-btn svg{width:18px; height:18px;}
+.badge-count{
+  position:absolute; top:-5px; right:-5px;
+  background:var(--coral); color:#fff;
+  font-family:var(--font-mono); font-size:9px; font-weight:700;
+  min-width:16px; height:16px; border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 3px;
+}
+.header-actions{display:flex; gap:8px;}
+
+/* ---------- SCREENS ---------- */
+.screen{
+  flex:1;
+  display:none;
+  flex-direction:column;
+  padding:0 20px 40px;
+}
+.screen.active{display:flex;}
+
+/* ---------- INTRO ---------- */
+#screen-intro{
+  justify-content:center;
+  padding-top:10px;
+  text-align:left;
+}
+.intro-eyebrow{
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--teal);
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.intro-eyebrow::before{
+  content:'';
+  width:6px;height:6px;border-radius:50%;
+  background:var(--teal);
+  box-shadow:0 0 8px var(--teal);
+  animation:pulse-dot 1.8s ease-in-out infinite;
+}
+@keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:0.3;}}
+.intro-title{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:42px;
+  line-height:1.02;
+  letter-spacing:-0.03em;
+  margin-bottom:16px;
+}
+.intro-title em{
+  font-style:normal;
+  background:linear-gradient(100deg, var(--violet), var(--coral));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+.intro-desc{
+  color:var(--ink-dim);
+  font-size:15px;
+  line-height:1.6;
+  max-width:420px;
+  margin-bottom:28px;
+}
+/* ---------- SEARCH ---------- */
+#screen-search{padding-top:10px;}
+.search-head{
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:16px;
+}
+.search-head h2{font-family:var(--font-display); font-weight:700; font-size:19px;}
+.search-box{
+  display:flex; align-items:center; gap:10px;
+  background:var(--bg-panel);
+  border:1.5px solid var(--line);
+  border-radius:14px;
+  padding:13px 16px;
+  margin-bottom:8px;
+  transition:border-color .15s ease;
+}
+.search-box:focus-within{border-color:var(--violet);}
+.search-box svg{width:18px; height:18px; color:var(--ink-faint); flex-shrink:0;}
+.search-box input{
+  flex:1; background:none; border:none; outline:none;
+  color:var(--ink); font-size:15px; font-family:var(--font-body);
+}
+.search-box input::placeholder{color:var(--ink-faint);}
+.search-hint{
+  font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);
+  margin-bottom:18px;
+}
+.search-status{
+  text-align:center; padding:30px 10px; color:var(--ink-faint); font-size:13px;
+  display:flex; flex-direction:column; align-items:center; gap:12px;
+}
+.search-result-card{
+  display:flex; gap:12px;
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+  animation:cardIn .35s cubic-bezier(.22,1,.36,1) backwards;
+}
+.search-result-card img{
+  width:64px; height:88px; object-fit:cover; border-radius:9px; flex-shrink:0;
+  background:linear-gradient(135deg, #241f3d, #171626);
+}
+.src-info{flex:1; min-width:0; display:flex; flex-direction:column;}
+.src-info h4{font-size:14.5px; font-weight:600; line-height:1.3; margin-bottom:4px;}
+.src-meta{
+  display:flex; gap:10px; flex-wrap:wrap;
+  font-family:var(--font-mono); font-size:10.5px; color:var(--ink-faint);
+  margin-bottom:8px;
+}
+.src-meta b{color:var(--teal);}
+.src-actions{display:flex; gap:8px; margin-top:auto;}
+.src-actions button{
+  font-size:11.5px; font-weight:600; padding:8px 12px; border-radius:9px;
+  border:1px solid var(--line); background:var(--bg-panel);
+  display:flex; align-items:center; gap:5px;
+  transition:transform .12s ease, border-color .15s ease;
+}
+.src-actions button:active{transform:scale(0.95);}
+.src-actions button svg{width:13px; height:13px;}
+.src-actions a.mal-link{
+  font-size:11.5px; color:var(--ink-faint); text-decoration:none;
+  display:flex; align-items:center; padding:8px 4px;
+}
+.src-actions button.saved{border-color:var(--coral); color:var(--coral);}
+
+/* ---------- DASHBOARD CARDS (intro) ---------- */
+.intro-stats{
+  display:flex;
+  gap:10px;
+  margin-bottom:28px;
+  border:none;
+}
+.intro-stat{
+  flex:1;
+  background:var(--bg-panel);
+  border:1.5px solid var(--line);
+  border-radius:16px;
+  padding:18px 10px;
+  text-align:center;
+  transition:border-color .15s ease, transform .15s ease;
+}
+.intro-stat:active{transform:scale(0.97);}
+.intro-stat:nth-child(1){border-color:rgba(124,92,255,0.35);}
+.intro-stat:nth-child(2){border-color:rgba(62,217,197,0.35);}
+.intro-stat:nth-child(3){border-color:rgba(255,77,109,0.35);}
+.intro-stat b{
+  display:block;
+  font-family:var(--font-mono);
+  font-size:26px;
+  color:var(--ink);
+  margin-bottom:4px;
+}
+.intro-stat span{
+  font-size:10.5px;
+  color:var(--ink-dim);
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  font-weight:600;
+}
+.btn-primary{
+  background:linear-gradient(100deg, var(--violet), #9b7bff);
+  color:#fff;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:16px;
+  padding:17px 24px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  width:100%;
+  box-shadow:0 8px 30px -8px rgba(124,92,255,0.6);
+  transition:transform .15s ease, box-shadow .15s ease;
+}
+.btn-primary:active{transform:scale(0.97);}
+.btn-secondary{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  color:var(--ink);
+  font-weight:600;
+  font-size:14px;
+  padding:14px 20px;
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  width:100%;
+  transition:transform .15s ease, border-color .15s ease;
+}
+.btn-secondary:active{transform:scale(0.97);}
+.btn-secondary.ghost{background:transparent;}
+.intro-modes{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:12px;
+}
+.intro-modes .btn-secondary{font-size:13px; padding:13px 14px;}
+
+/* ---------- QUIZ ---------- */
+#screen-quiz{padding-top:6px;}
+.quiz-progress-wrap{
+  margin-bottom:6px;
+}
+.quiz-progress-track{
+  height:4px;
+  background:var(--line);
+  border-radius:4px;
+  overflow:hidden;
+  display:flex;
+  gap:3px;
+}
+.quiz-progress-seg{
+  flex:1;
+  height:100%;
+  background:var(--bg-panel);
+  border-radius:4px;
+  overflow:hidden;
+  position:relative;
+}
+.quiz-progress-seg.done::after{
+  content:'';
+  position:absolute; inset:0;
+  background:var(--violet);
+}
+.quiz-progress-seg.current::after{
+  content:'';
+  position:absolute; inset:0;
+  background:var(--violet);
+  animation:fillseg .3s ease forwards;
+}
+@keyframes fillseg{from{transform:scaleX(0);}to{transform:scaleX(1);}}
+.quiz-progress-seg{transform-origin:left;}
+.quiz-progress-seg.current::after{transform-origin:left;}
+
+.quiz-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin:14px 0 4px;
+  font-family:var(--font-mono);
+  font-size:11px;
+  color:var(--ink-faint);
+}
+.quiz-meta .counter-live{
+  color:var(--teal);
+  display:flex; align-items:center; gap:6px;
+}
+.quiz-meta .counter-live b{
+  color:var(--teal);
+  font-size:13px;
+  transition:color .2s ease;
+}
+
+.quiz-card-stage{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  position:relative;
+  min-height:400px;
+}
+.q-block{
+  position:absolute;
+  inset:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  opacity:0;
+  transform:translateX(24px);
+  pointer-events:none;
+  transition:opacity .32s cubic-bezier(.22,1,.36,1), transform .32s cubic-bezier(.22,1,.36,1);
+}
+.q-block.active{
+  opacity:1;
+  transform:translateX(0);
+  pointer-events:auto;
+  position:relative;
+}
+.q-block.leaving{
+  opacity:0;
+  transform:translateX(-24px);
+}
+.q-icon{
+  font-size:30px;
+  margin-bottom:14px;
+  display:block;
+}
+.q-title{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:25px;
+  line-height:1.22;
+  letter-spacing:-0.02em;
+  margin-bottom:6px;
+}
+.q-sub{
+  color:var(--ink-dim);
+  font-size:13.5px;
+  margin-bottom:24px;
+  line-height:1.5;
+}
+.q-options{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.q-option{
+  background:var(--bg-panel);
+  border:1.5px solid var(--line);
+  border-radius:14px;
+  padding:16px 18px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  text-align:left;
+  transition: border-color .15s ease, background .15s ease, transform .1s ease;
+}
+.q-option:active{transform:scale(0.98);}
+.q-option .opt-emoji{font-size:20px; flex-shrink:0; width:24px; text-align:center;}
+.q-option .opt-text{flex:1;}
+.q-option .opt-label{font-weight:600; font-size:14.5px; display:block;}
+.q-option .opt-desc{font-size:12px; color:var(--ink-faint); margin-top:2px; display:block;}
+.q-option.selected{
+  border-color:var(--violet);
+  background:var(--violet-dim);
+}
+.q-option .opt-check{
+  width:20px; height:20px; border-radius:6px;
+  border:1.5px solid var(--line);
+  flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s ease;
+}
+.q-option.selected .opt-check{
+  background:var(--violet);
+  border-color:var(--violet);
+}
+.q-option .opt-check svg{width:12px; height:12px; opacity:0; transition:opacity .15s ease;}
+.q-option.selected .opt-check svg{opacity:1;}
+.q-multi-hint{
+  font-size:11px;
+  color:var(--ink-faint);
+  margin-top:2px;
+  margin-bottom:14px;
+  font-style:italic;
+}
+
+.quiz-nav{
+  display:flex;
+  gap:10px;
+  margin-top:22px;
+}
+.quiz-nav .btn-back{
+  width:52px; flex-shrink:0;
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+}
+.quiz-nav .btn-next{flex:1;}
+.btn-next:disabled, .q-nav-next-disabled{opacity:0.35; pointer-events:none;}
+
+/* ---------- ANALYZING ---------- */
+#screen-analyzing{
+  justify-content:center; align-items:center; text-align:center;
+}
+.scan-ring{
+  width:88px; height:88px;
+  border-radius:50%;
+  border:3px solid var(--line);
+  border-top-color:var(--violet);
+  border-right-color:var(--coral);
+  animation:spin 1s linear infinite;
+  margin-bottom:26px;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+.scan-title{font-family:var(--font-display); font-weight:700; font-size:20px; margin-bottom:10px;}
+.scan-log{
+  font-family:var(--font-mono);
+  font-size:12px;
+  color:var(--ink-faint);
+  min-height:18px;
+}
+
+/* ---------- RESULT ---------- */
+#screen-result{padding-top:8px;}
+.result-header{margin-bottom:18px;}
+.result-eyebrow{
+  font-family:var(--font-mono);
+  font-size:10.5px;
+  color:var(--ink-faint);
+  text-transform:uppercase;
+  letter-spacing:0.1em;
+  margin-bottom:8px;
+}
+.result-title{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-size:26px;
+  letter-spacing:-0.02em;
+  line-height:1.1;
+}
+.result-title span{color:var(--violet);}
+
+.fallback-banner{
+  background:linear-gradient(100deg, rgba(255,184,92,0.12), rgba(255,184,92,0.04));
+  border:1px solid rgba(255,184,92,0.35);
+  border-radius:14px;
+  padding:13px 15px;
+  font-size:12.5px;
+  color:var(--gold);
+  margin-bottom:16px;
+  display:flex; gap:10px; align-items:flex-start;
+  line-height:1.5;
+}
+.fallback-banner svg{width:16px;height:16px; flex-shrink:0; margin-top:1px;}
+
+.anime-card{
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:16px;
+  animation:cardIn .45s cubic-bezier(.22,1,.36,1) backwards;
+}
+@keyframes cardIn{
+  from{opacity:0; transform:translateY(18px) scale(0.98);}
+  to{opacity:1; transform:translateY(0) scale(1);}
+}
+.anime-card:nth-child(1){animation-delay:.05s;}
+.anime-card:nth-child(2){animation-delay:.15s;}
+.anime-card:nth-child(3){animation-delay:.25s;}
+
+.ac-media{
+  position:relative;
+  width:100%;
+  aspect-ratio:16/8.2;
+  background:linear-gradient(135deg, #241f3d, #171626);
+  overflow:hidden;
+}
+.ac-media img{
+  width:100%; height:100%; object-fit:cover;
+  display:block;
+}
+.ac-media .ac-placeholder{
+  position:absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:700; font-size:44px;
+  color:rgba(255,255,255,0.14);
+}
+.ac-media::after{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, transparent 40%, rgba(10,10,15,0.9) 100%);
+}
+.ac-rank{
+  position:absolute; top:12px; left:12px; z-index:2;
+  font-family:var(--font-mono); font-weight:700; font-size:11px;
+  background:rgba(10,10,15,0.65);
+  backdrop-filter:blur(6px);
+  color:var(--ink);
+  padding:5px 9px; border-radius:8px;
+  border:1px solid rgba(255,255,255,0.15);
+}
+.ac-match{
+  position:absolute; top:12px; right:12px; z-index:2;
+  font-family:var(--font-mono); font-weight:700; font-size:12px;
+  background:rgba(62,217,197,0.16);
+  color:var(--teal);
+  border:1px solid rgba(62,217,197,0.4);
+  padding:5px 10px; border-radius:8px;
+  backdrop-filter:blur(6px);
+}
+.ac-match.low{color:var(--gold); background:rgba(255,184,92,0.14); border-color:rgba(255,184,92,0.4);}
+.ac-auto-badge{
+  position:absolute; top:44px; right:12px; z-index:2;
+  font-family:var(--font-mono); font-size:9.5px; font-weight:600;
+  background:rgba(255,184,92,0.14); color:var(--gold);
+  border:1px solid rgba(255,184,92,0.35);
+  padding:3px 8px; border-radius:7px;
+  backdrop-filter:blur(6px);
+}
+.ac-save{
+  position:absolute; bottom:12px; right:12px; z-index:2;
+  width:36px; height:36px; border-radius:10px;
+  background:rgba(10,10,15,0.65);
+  backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,0.15);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .15s ease;
+}
+.ac-save:active{transform:scale(0.9);}
+.ac-save svg{width:17px; height:17px; stroke:var(--ink); fill:none; transition:all .15s ease;}
+.ac-save.saved svg{fill:var(--coral); stroke:var(--coral);}
+.ac-title-overlay{
+  position:absolute; bottom:12px; left:14px; right:56px; z-index:2;
+}
+.ac-title-overlay h3{
+  font-family:var(--font-display); font-weight:700; font-size:18px;
+  line-height:1.15;
+}
+.ac-body{padding:14px 16px 16px;}
+.ac-genres{
+  display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;
+}
+.ac-genre-tag{
+  font-size:10.5px; font-family:var(--font-mono);
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  color:var(--ink-dim);
+  padding:4px 9px; border-radius:7px;
+}
+.ac-meta-row{
+  display:flex; gap:14px;
+  font-family:var(--font-mono); font-size:11px;
+  color:var(--ink-faint);
+  margin-bottom:12px;
+}
+.ac-meta-row b{color:var(--ink-dim); font-weight:600;}
+.ac-synopsis{
+  font-size:13px; color:var(--ink-dim); line-height:1.55;
+  margin-bottom:12px;
+}
+.ac-why{
+  background:var(--bg-panel);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px 14px;
+  margin-bottom:12px;
+}
+.ac-why-toggle{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:12.5px; font-weight:600; color:var(--violet);
+}
+.ac-why-toggle svg{width:14px; height:14px; transition:transform .2s ease;}
+.ac-why-toggle.open svg{transform:rotate(180deg);}
+.ac-why-list{
+  list-style:none; margin-top:10px; display:none; flex-direction:column; gap:7px;
+}
+.ac-why-list.open{display:flex;}
+.ac-why-list li{
+  font-size:12.5px; color:var(--ink-dim); line-height:1.5;
+  padding-left:16px; position:relative;
+}
+.ac-why-list li::before{
+  content:'';
+  position:absolute; left:0; top:6px;
+  width:5px; height:5px; border-radius:50%;
+  background:var(--teal);
+}
+.ac-actions{display:flex; gap:8px;}
+.ac-actions button{
+  flex:1;
+  padding:11px 10px;
+  border-radius:11px;
+  font-size:12.5px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  border:1px solid var(--line);
+  background:var(--bg-panel);
+  transition:transform .12s ease, border-color .15s ease;
+}
+.ac-actions button:active{transform:scale(0.95);}
+.ac-actions button.reject:hover{border-color:var(--coral);}
+.ac-actions button svg{width:14px;height:14px;}
+
+.result-footer-actions{
+  display:flex; flex-direction:column; gap:10px; margin-top:6px;
+}
+.result-footer-row{display:flex; gap:10px;}
+.result-footer-row button{flex:1;}
+
+/* ---------- WATCHLIST DRAWER ---------- */
+.drawer-overlay{
+  position:fixed; inset:0; background:rgba(6,6,10,0.7);
+  backdrop-filter:blur(3px);
+  z-index:50; opacity:0; pointer-events:none;
+  transition:opacity .25s ease;
+}
+.drawer-overlay.open{opacity:1; pointer-events:auto;}
+.drawer{
+  position:fixed; right:0; top:0; bottom:0;
+  width:min(400px, 88vw);
+  background:var(--bg-panel);
+  border-left:1px solid var(--line);
+  z-index:51;
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.22,1,.36,1);
+  display:flex; flex-direction:column;
+  padding:20px;
+  overflow-y:auto;
+}
+.drawer.open{transform:translateX(0);}
+.drawer-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+.drawer-head h2{font-family:var(--font-display); font-size:19px; font-weight:700;}
+.drawer-empty{
+  color:var(--ink-faint); font-size:13px; text-align:center; margin-top:60px; line-height:1.6;
+}
+.watch-item{
+  display:flex; gap:12px; padding:10px; border-radius:12px;
+  background:var(--bg-card); border:1px solid var(--line);
+  margin-bottom:10px; align-items:center;
+}
+.watch-item img{width:52px; height:70px; object-fit:cover; border-radius:8px; background:#241f3d; flex-shrink:0;}
+.watch-item .wi-info{flex:1; min-width:0;}
+.watch-item .wi-info h4{font-size:13.5px; font-weight:600; line-height:1.3;}
+.watch-item .wi-info span{font-size:11px; color:var(--ink-faint); font-family:var(--font-mono);}
+.watch-item .wi-remove{
+  width:28px; height:28px; border-radius:8px; background:var(--bg-panel); border:1px solid var(--line);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.watch-item .wi-remove svg{width:13px;height:13px;}
+
+/* ---------- SWIPE MODE ---------- */
+#screen-swipe{padding-top:8px; align-items:center;}
+.swipe-header{width:100%; text-align:center; margin-bottom:18px;}
+.swipe-header h2{font-family:var(--font-display); font-weight:700; font-size:20px;}
+.swipe-header p{color:var(--ink-faint); font-size:12px; margin-top:4px; font-family:var(--font-mono);}
+.swipe-stage{
+  position:relative;
+  width:100%;
+  max-width:340px;
+  height:460px;
+  margin:0 auto 22px;
+}
+.swipe-card{
+  position:absolute; inset:0;
+  background:var(--bg-card);
+  border:1px solid var(--line);
+  border-radius:22px;
+  overflow:hidden;
+  display:flex; flex-direction:column;
+  box-shadow:0 20px 50px -20px rgba(0,0,0,0.6);
+  transition:transform .35s cubic-bezier(.22,1,.36,1), opacity .35s ease;
+  touch-action:pan-y;
+}
+.swipe-card .sc-media{
+  flex:1; position:relative; background:linear-gradient(135deg, #241f3d, #171626);
+  min-height:0;
+}
+.swipe-card .sc-media img{width:100%; height:100%; object-fit:cover; display:block;}
+.swipe-card .sc-media .ac-placeholder{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:700; font-size:40px; color:rgba(255,255,255,0.14);}
+.swipe-card .sc-media::after{content:'';position:absolute; inset:0; background:linear-gradient(180deg, transparent 45%, rgba(10,10,15,0.92) 100%);}
+.swipe-card .sc-info{position:absolute; bottom:0; left:0; right:0; padding:16px; z-index:2;}
+.swipe-card .sc-info h3{font-family:var(--font-display); font-weight:700; font-size:19px; margin-bottom:5px;}
+.swipe-card .sc-tags{display:flex; gap:6px; flex-wrap:wrap;}
+.swipe-card .sc-tags span{font-size:10px; font-family:var(--font-mono); background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); padding:3px 8px; border-radius:6px;}
+.swipe-tint{
+  position:absolute; inset:0; z-index:1;
+  opacity:0; transition:opacity .08s linear;
+  pointer-events:none;
+}
+.swipe-tint.tint-green{background:radial-gradient(ellipse at right, rgba(62,217,197,0.55), rgba(62,217,197,0.05) 70%);}
+.swipe-tint.tint-red{background:radial-gradient(ellipse at left, rgba(255,77,109,0.55), rgba(255,77,109,0.05) 70%);}
+.swipe-stamp{
+  position:absolute; top:26px; z-index:3;
+  font-family:var(--font-display); font-weight:700; font-size:22px;
+  padding:6px 16px; border-radius:10px; border:3px solid;
+  text-transform:uppercase; letter-spacing:0.05em;
+  opacity:0; transition:opacity .1s ease;
+}
+.swipe-stamp.like{right:20px; color:var(--teal); border-color:var(--teal); transform:rotate(8deg);}
+.swipe-stamp.nope{left:20px; color:var(--coral); border-color:var(--coral); transform:rotate(-8deg);}
+.swipe-controls{display:flex; gap:18px; justify-content:center;}
+.swipe-btn{
+  width:58px; height:58px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--bg-panel); border:1.5px solid var(--line);
+  transition:transform .12s ease;
+}
+.swipe-btn:active{transform:scale(0.9);}
+.swipe-btn svg{width:24px; height:24px;}
+.swipe-btn.nope svg{stroke:var(--coral);}
+.swipe-btn.like svg{stroke:var(--teal);}
+.swipe-btn.like{width:66px; height:66px;}
+.swipe-empty{
+  text-align:center; padding:40px 20px; color:var(--ink-faint); font-size:13px; line-height:1.6;
+}
+
+/* ---------- MISC ---------- */
+.hidden{display:none !important;}
+.footer-note{
+  text-align:center; font-family:var(--font-mono); font-size:10px; color:var(--ink-faint);
+  padding:18px 20px 30px; opacity:0.6;
+}
+.spin-mini{
+  width:14px; height:14px; border-radius:50%;
+  border:2px solid rgba(255,255,255,0.25); border-top-color:#fff;
+  animation:spin .7s linear infinite;
+}
+@media (min-width:600px){
+  .intro-title{font-size:48px;}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">ANIME<span>.</span>FINDER</div>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btn-search" aria-label="Cerca">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      </button>
+      <button class="icon-btn" id="btn-watchlist" aria-label="Watchlist">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span class="badge-count hidden" id="watchlist-count">0</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- INTRO -->
+  <section class="screen active" id="screen-intro">
+    <div class="intro-eyebrow">Recommendation engine attivo</div>
+    <h1 class="intro-title">Non sai cosa<br><em>guardare?</em><br>Te lo trova il sistema.</h1>
+    <p class="intro-desc">Rispondi a poche domande su mood, ritmo e stato d'animo. L'algoritmo pesa ogni risposta e restringe il catalogo fino a trovare l'anime perfetto per te ora — non un genere, un match.</p>
+    <div class="intro-stats">
+      <div class="intro-stat"><b id="stat-total">28</b><span>Catalogo</span></div>
+      <div class="intro-stat"><b id="stat-questions">10</b><span>Domande</span></div>
+      <div class="intro-stat"><b>1–3</b><span>Anime Vincenti</span></div>
+    </div>
+    <button class="btn-primary" id="btn-start">
+      Inizia il quiz
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <div class="intro-modes">
+      <button class="btn-secondary ghost" id="btn-swipe-mode">🔥 Modalità swipe</button>
+      <button class="btn-secondary ghost" id="btn-search-home">🔍 Cerca un anime specifico</button>
+    </div>
+  </section>
+
+  <!-- SEARCH -->
+  <section class="screen" id="screen-search">
+    <div class="search-head">
+      <button class="icon-btn" id="btn-search-back" aria-label="Indietro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      </button>
+      <h2>Cerca un anime</h2>
+    </div>
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Es. One Piece, Bleach, Chainsaw Man…" autocomplete="off">
+    </div>
+    <p class="search-hint">Dati recuperati in tempo reale da Jikan API (MyAnimeList).</p>
+    <div id="search-results"></div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="screen" id="screen-quiz">
+    <div class="quiz-progress-wrap">
+      <div class="quiz-progress-track" id="progress-track"></div>
+    </div>
+    <div class="quiz-meta">
+      <span id="quiz-step-label">Domanda 1/9</span>
+      <span class="counter-live">◈ <b id="live-counter">28</b> anime compatibili</span>
+    </div>
+    <div class="quiz-card-stage" id="quiz-stage"></div>
+    <div class="quiz-nav">
+      <button class="btn-back" id="btn-back" aria-label="Indietro">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      </button>
+      <button class="btn-primary btn-next" id="btn-next">Avanti</button>
+    </div>
+  </section>
+
+  <!-- ANALYZING -->
+  <section class="screen" id="screen-analyzing">
+    <div class="scan-ring"></div>
+    <div class="scan-title">Sto calcolando i match…</div>
+    <div class="scan-log" id="scan-log">Analisi profilo utente</div>
+  </section>
+
+  <!-- RESULT -->
+  <section class="screen" id="screen-result">
+    <div class="result-header">
+      <div class="result-eyebrow" id="result-eyebrow">Il tuo profilo</div>
+      <h2 class="result-title">I tuoi <span>match</span></h2>
+    </div>
+    <div id="fallback-banner-slot"></div>
+    <div id="result-cards"></div>
+    <div class="result-footer-actions">
+      <div class="result-footer-row">
+        <button class="btn-secondary" id="btn-more"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg> Altri anime</button>
+        <button class="btn-secondary" id="btn-regenerate"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> Rigenera</button>
+      </div>
+      <button class="btn-secondary ghost" id="btn-restart">Ricomincia il quiz da zero</button>
+    </div>
+  </section>
+
+  <!-- SWIPE MODE -->
+  <section class="screen" id="screen-swipe">
+    <div class="swipe-header">
+      <h2>Modalità Swipe</h2>
+      <p id="swipe-sub">SCEGLI COSA TI ISPIRA →</p>
+    </div>
+    <div class="swipe-stage" id="swipe-stage"></div>
+    <div class="swipe-controls">
+      <button class="swipe-btn nope" id="swipe-nope" aria-label="No">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+      <button class="swipe-btn like" id="swipe-like" aria-label="Sì">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+      </button>
+    </div>
+    <button class="btn-secondary ghost" id="btn-exit-swipe" style="margin-top:20px;">Torna al quiz classico</button>
+  </section>
+
+  <div class="footer-note">Dati anime via Jikan API (MyAnimeList) · Scoring lato client</div>
+</div>
+
+<div class="drawer-overlay" id="drawer-overlay"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <h2>La tua watchlist</h2>
+    <button class="icon-btn" id="btn-close-drawer">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div id="drawer-content"></div>
+</div>
+
+<script>
+/* ==========================================================================
+   ANIME DECISION FINDER — DATASET
+   Ogni titolo ha assi psicologici/di preferenza (0-10) usati dal motore di
+   scoring, oltre a metadati editoriali. Le immagini/episodi/voto "ufficiali"
+   vengono arricchiti a runtime via Jikan API (MyAnimeList) quando disponibile;
+   qui teniamo comunque dei valori di fallback realistici.
+   ========================================================================== */
+
+const ANIME_DB = [
+{ id:'death-note', title:'Death Note', mal_id:1535, episodes:37, rating:8.6,
+  genres:['Thriller','Psicologico','Mistero'],
+  synopsis:'Un liceo geniale trova un quaderno capace di uccidere chiunque scrivendone il nome, e inizia un duello mentale contro un detective altrettanto brillante.',
+  light_serious:9, motivating_sad:6, relaxing_intense:9, slow_fast:7, complexity:9, visual_quality:5,
+  focus:{story:9, characters:7, action:3}, era:'modern', realistic_fantasy:2,
+  tags:['mindblowing','dark','reflective'] },
+
+{ id:'aot', title:"L'Attacco dei Giganti", mal_id:16498, episodes:87, rating:8.9,
+  genres:['Azione','Dark Fantasy','Drammatico'],
+  synopsis:"L'umanità vive rinchiusa dietro enormi mura per difendersi da giganti divoratori di uomini, finché un ragazzo giura di sterminarli tutti.",
+  light_serious:10, motivating_sad:7, relaxing_intense:10, slow_fast:8, complexity:8, visual_quality:9,
+  focus:{story:9, characters:7, action:9}, era:'fantasy', realistic_fantasy:6,
+  tags:['epic','dark','mindblowing'] },
+
+{ id:'ylia', title:'Your Lie in April', mal_id:23273, episodes:22, rating:8.6,
+  genres:['Drammatico','Musica','Romantico'],
+  synopsis:'Un pianista prodigio che ha smesso di suonare dopo un trauma incontra una violinista solare che gli restituisce la voglia di vivere la musica.',
+  light_serious:6, motivating_sad:9, relaxing_intense:5, slow_fast:3, complexity:3, visual_quality:7,
+  focus:{story:8, characters:9, action:1}, era:'modern', realistic_fantasy:1,
+  tags:['sad','romantic','reflective'] },
+
+{ id:'clannad', title:'Clannad', mal_id:2167, episodes:23, rating:8.1,
+  genres:['Slice of Life','Drammatico','Romantico'],
+  synopsis:'Uno studente disilluso lega con un gruppo di ragazze dai problemi nascosti, scoprendo il valore della famiglia e delle seconde possibilità.',
+  light_serious:5, motivating_sad:8, relaxing_intense:3, slow_fast:2, complexity:2, visual_quality:5,
+  focus:{story:7, characters:9, action:0}, era:'modern', realistic_fantasy:2,
+  tags:['sad','wholesome','feel-good','artistic'] },
+
+{ id:'kon', title:'K-On!', mal_id:5680, episodes:39, rating:7.8,
+  genres:['Slice of Life','Commedia','Musica'],
+  synopsis:'Quattro amiche delle superiori rifondano il club di musica leggera tra prove improbabili, tè pomeridiani e amicizia spensierata.',
+  light_serious:1, motivating_sad:1, relaxing_intense:1, slow_fast:1, complexity:1, visual_quality:6,
+  focus:{story:2, characters:9, action:0}, era:'modern', realistic_fantasy:1,
+  tags:['funny','wholesome','feel-good'] },
+
+{ id:'konosuba', title:'Konosuba', mal_id:21202, episodes:20, rating:8.1,
+  genres:['Commedia','Fantasy','Parodia'],
+  synopsis:'Morto per un imbarazzante incidente, un ragazzo si ritrova in un mondo fantasy con una dea inutile e una squadra di disadattati.',
+  light_serious:1, motivating_sad:1, relaxing_intense:4, slow_fast:5, complexity:2, visual_quality:5,
+  focus:{story:4, characters:9, action:4}, era:'fantasy', realistic_fantasy:9,
+  tags:['funny','feel-good'] },
+
+{ id:'opm', title:'One Punch Man', mal_id:30276, episodes:24, rating:8.5,
+  genres:['Azione','Commedia','Supereroi'],
+  synopsis:'Un eroe capace di sconfiggere qualunque nemico con un solo pugno affronta il problema più grande della sua carriera: la noia.',
+  light_serious:3, motivating_sad:2, relaxing_intense:8, slow_fast:9, complexity:2, visual_quality:9,
+  focus:{story:3, characters:6, action:10}, era:'modern', realistic_fantasy:6,
+  tags:['funny','epic'] },
+
+{ id:'steins', title:'Steins;Gate', mal_id:9253, episodes:24, rating:9.0,
+  genres:['Sci-Fi','Thriller','Drammatico'],
+  synopsis:"Un gruppo di amici scopre per caso come inviare messaggi nel passato, innescando conseguenze sempre più pericolose sul presente.",
+  light_serious:6, motivating_sad:6, relaxing_intense:7, slow_fast:2, complexity:9, visual_quality:5,
+  focus:{story:10, characters:7, action:2}, era:'modern', realistic_fantasy:4,
+  tags:['mindblowing','reflective','sad'] },
+
+{ id:'bebop', title:'Cowboy Bebop', mal_id:1, episodes:26, rating:8.7,
+  genres:['Sci-Fi','Azione','Noir'],
+  synopsis:'Cacciatori di taglie alla deriva nello spazio inseguono criminali e fantasmi del proprio passato, tra jazz e solitudine cosmica.',
+  light_serious:6, motivating_sad:5, relaxing_intense:6, slow_fast:5, complexity:5, visual_quality:6,
+  focus:{story:6, characters:8, action:7}, era:'futuristic', realistic_fantasy:5,
+  tags:['reflective','feel-good','artistic'] },
+
+{ id:'fmab', title:'Fullmetal Alchemist: Brotherhood', mal_id:5114, episodes:64, rating:9.1,
+  genres:['Azione','Avventura','Fantasy'],
+  synopsis:'Due fratelli alchimisti cercano di riparare i propri corpi dopo un esperimento proibito, scontrandosi con una cospirazione nazionale.',
+  light_serious:7, motivating_sad:6, relaxing_intense:8, slow_fast:6, complexity:6, visual_quality:7,
+  focus:{story:9, characters:8, action:8}, era:'fantasy', realistic_fantasy:6,
+  tags:['epic','reflective'] },
+
+{ id:'violet', title:'Violet Evergarden', mal_id:33352, episodes:13, rating:8.7,
+  genres:['Drammatico','Fantasy'],
+  synopsis:'Un\u2019ex soldatessa senza più emozioni diventa scrittrice di lettere per conto terzi, imparando lentamente cosa significhi amare.',
+  light_serious:6, motivating_sad:8, relaxing_intense:3, slow_fast:2, complexity:3, visual_quality:9,
+  focus:{story:7, characters:9, action:1}, era:'fantasy', realistic_fantasy:5,
+  tags:['sad','reflective','wholesome','artistic'] },
+
+{ id:'abyss', title:'Made in Abyss', mal_id:34599, episodes:13, rating:8.7,
+  genres:['Avventura','Fantasy','Mistero'],
+  synopsis:'Una bambina e un misterioso robot discendono in un abisso senza fondo pieno di meraviglie e orrori, in cerca della madre scomparsa.',
+  light_serious:8, motivating_sad:7, relaxing_intense:7, slow_fast:3, complexity:6, visual_quality:8,
+  focus:{story:8, characters:7, action:5}, era:'fantasy', realistic_fantasy:9,
+  tags:['dark','mindblowing','reflective','artistic'] },
+
+{ id:'mushishi', title:'Mushishi', mal_id:457, episodes:26, rating:8.6,
+  genres:['Slice of Life','Soprannaturale','Mistero'],
+  synopsis:'Un viandante che comunica con forme di vita primordiali aiuta le persone che incontra, in episodi contemplativi e autoconclusivi.',
+  light_serious:5, motivating_sad:4, relaxing_intense:1, slow_fast:1, complexity:4, visual_quality:6,
+  focus:{story:6, characters:5, action:0}, era:'medieval', realistic_fantasy:7,
+  tags:['reflective','feel-good','artistic'] },
+
+{ id:'erased', title:'Erased', mal_id:31043, episodes:12, rating:8.3,
+  genres:['Thriller','Mistero','Drammatico'],
+  synopsis:'Un uomo con la capacità di tornare indietro nel tempo di pochi minuti viene catapultato nel proprio passato per impedire un omicidio.',
+  light_serious:7, motivating_sad:6, relaxing_intense:6, slow_fast:5, complexity:6, visual_quality:6,
+  focus:{story:9, characters:7, action:3}, era:'modern', realistic_fantasy:3,
+  tags:['mindblowing','dark','reflective'] },
+
+{ id:'haikyuu', title:'Haikyuu!!', mal_id:20583, episodes:85, rating:8.7,
+  genres:['Sport','Commedia','Drammatico'],
+  synopsis:'Un liceale basso di statura ma testardo insegue il sogno della pallavolo, costruendo con la squadra un percorso di crescita corale.',
+  light_serious:2, motivating_sad:1, relaxing_intense:6, slow_fast:5, complexity:2, visual_quality:8,
+  focus:{story:5, characters:9, action:6}, era:'modern', realistic_fantasy:1,
+  tags:['feel-good','epic'] },
+
+{ id:'demonslayer', title:'Demon Slayer', mal_id:38000, episodes:44, rating:8.5,
+  genres:['Azione','Fantasy','Avventura'],
+  synopsis:'Un giovane diventa cacciatore di demoni per vendicare la famiglia e trovare una cura per la sorella trasformata in demone.',
+  light_serious:5, motivating_sad:5, relaxing_intense:9, slow_fast:8, complexity:2, visual_quality:10,
+  focus:{story:5, characters:7, action:10}, era:'fantasy', realistic_fantasy:7,
+  tags:['epic','feel-good'] },
+
+{ id:'jjk', title:'Jujutsu Kaisen', mal_id:40748, episodes:24, rating:8.6,
+  genres:['Azione','Soprannaturale'],
+  synopsis:'Uno studente ingoia un dito maledetto per proteggere i compagni ed entra in una scuola segreta che addestra stregoni contro demoni.',
+  light_serious:6, motivating_sad:4, relaxing_intense:9, slow_fast:9, complexity:4, visual_quality:9,
+  focus:{story:5, characters:8, action:10}, era:'modern', realistic_fantasy:6,
+  tags:['epic','dark'] },
+
+{ id:'vinland', title:'Vinland Saga', mal_id:37521, episodes:24, rating:8.8,
+  genres:['Azione','Storico','Drammatico'],
+  synopsis:'Un giovane vichingo cresce ossessionato dalla vendetta tra scorrerie e guerre, per poi interrogarsi sul vero significato della forza.',
+  light_serious:8, motivating_sad:6, relaxing_intense:7, slow_fast:3, complexity:6, visual_quality:8,
+  focus:{story:9, characters:9, action:6}, era:'medieval', realistic_fantasy:2,
+  tags:['reflective','dark','epic','artistic'] },
+
+{ id:'spyfamily', title:'Spy x Family', mal_id:50265, episodes:25, rating:8.6,
+  genres:['Commedia','Azione','Famiglia'],
+  synopsis:'Una spia, una sicaria e una telepate fingono di essere una famiglia normale senza sapere nulla l\u2019uno dell\u2019altra: il caos è servito.',
+  light_serious:1, motivating_sad:1, relaxing_intense:3, slow_fast:5, complexity:1, visual_quality:7,
+  focus:{story:4, characters:9, action:5}, era:'modern', realistic_fantasy:3,
+  tags:['funny','wholesome','feel-good'] },
+
+{ id:'frieren', title:"Frieren: Beyond Journey's End", mal_id:52991, episodes:28, rating:9.0,
+  genres:['Fantasy','Avventura','Drammatico'],
+  synopsis:"Un'elfa immortale, dopo aver sconfitto il Re Demone, riscopre lentamente il valore del tempo passato accanto a compagni che invecchiano.",
+  light_serious:5, motivating_sad:6, relaxing_intense:2, slow_fast:1, complexity:3, visual_quality:9,
+  focus:{story:8, characters:9, action:2}, era:'fantasy', realistic_fantasy:8,
+  tags:['reflective','sad','feel-good','artistic'] },
+
+{ id:'monster', title:'Monster', mal_id:19, episodes:74, rating:8.9,
+  genres:['Thriller','Psicologico','Mistero'],
+  synopsis:'Un neurochirurgo che salva la vita a un bambino scopre anni dopo di aver creato, involontariamente, un mostro senza scrupoli.',
+  light_serious:10, motivating_sad:7, relaxing_intense:8, slow_fast:2, complexity:9, visual_quality:4,
+  focus:{story:10, characters:9, action:3}, era:'modern', realistic_fantasy:1,
+  tags:['dark','mindblowing','reflective','artistic'] },
+
+{ id:'eva', title:'Neon Genesis Evangelion', mal_id:30, episodes:26, rating:8.4,
+  genres:['Mecha','Psicologico','Drammatico'],
+  synopsis:'Adolescenti reclutati per pilotare giganteschi mecha biomeccanici affrontano mostri apocalittici e, soprattutto, sé stessi.',
+  light_serious:9, motivating_sad:8, relaxing_intense:7, slow_fast:4, complexity:9, visual_quality:3,
+  focus:{story:8, characters:9, action:6}, era:'futuristic', realistic_fantasy:5,
+  tags:['mindblowing','dark','reflective','artistic'] },
+
+{ id:'fruitsbasket', title:'Fruits Basket (2019)', mal_id:38101, episodes:63, rating:8.6,
+  genres:['Drammatico','Romantico','Soprannaturale'],
+  synopsis:'Una ragazza orfana viene accolta da una famiglia maledetta che si trasforma negli animali dello zodiaco cinese quando abbracciata.',
+  light_serious:6, motivating_sad:7, relaxing_intense:3, slow_fast:2, complexity:3, visual_quality:7,
+  focus:{story:7, characters:10, action:0}, era:'modern', realistic_fantasy:4,
+  tags:['sad','wholesome','feel-good'] },
+
+{ id:'toradora', title:'Toradora!', mal_id:4224, episodes:25, rating:8.1,
+  genres:['Romantico','Commedia','Drammatico'],
+  synopsis:'Due studenti dal carattere impossibile stringono un\u2019alleanza per aiutarsi a conquistare i rispettivi migliori amici, con esiti prevedibili.',
+  light_serious:3, motivating_sad:5, relaxing_intense:3, slow_fast:2, complexity:2, visual_quality:5,
+  focus:{story:5, characters:9, action:0}, era:'modern', realistic_fantasy:1,
+  tags:['romantic','funny','feel-good'] },
+
+{ id:'silentvoice', title:'A Silent Voice', mal_id:28851, episodes:1, rating:8.9,
+  genres:['Drammatico','Romantico'],
+  synopsis:'Un ex bullo cerca redenzione riavvicinandosi alla compagna sorda che aveva tormentato alle elementari, tra sensi di colpa e rinascita.',
+  light_serious:7, motivating_sad:8, relaxing_intense:4, slow_fast:2, complexity:3, visual_quality:9,
+  focus:{story:8, characters:9, action:0}, era:'modern', realistic_fantasy:1,
+  tags:['sad','reflective','wholesome','artistic'] },
+
+{ id:'yourname', title:'Your Name', mal_id:32281, episodes:1, rating:8.8,
+  genres:['Romantico','Fantasy','Drammatico'],
+  synopsis:'Due sconosciuti iniziano a scambiarsi i corpi nel sonno, scoprendo un legame che sfida tempo e distanza.',
+  light_serious:4, motivating_sad:7, relaxing_intense:5, slow_fast:3, complexity:4, visual_quality:10,
+  focus:{story:8, characters:7, action:1}, era:'fantasy', realistic_fantasy:6,
+  tags:['romantic','reflective','mindblowing','artistic'] },
+
+{ id:'mob', title:'Mob Psycho 100', mal_id:32182, episodes:37, rating:8.6,
+  genres:['Azione','Commedia','Soprannaturale'],
+  synopsis:'Un ragazzo psichico timidissimo cerca di vivere una vita normale reprimendo i suoi poteri devastanti, finché non trabocca.',
+  light_serious:3, motivating_sad:3, relaxing_intense:7, slow_fast:6, complexity:3, visual_quality:9,
+  focus:{story:6, characters:9, action:8}, era:'modern', realistic_fantasy:6,
+  tags:['funny','epic','feel-good','artistic'] },
+
+{ id:'nichijou', title:'Nichijou', mal_id:10165, episodes:26, rating:8.3,
+  genres:['Commedia','Slice of Life'],
+  synopsis:'Vita scolastica assolutamente ordinaria, se non fosse per una professoressa parlante di nome Sensei e un robot androide indistinguibile da una liceale.',
+  light_serious:0, motivating_sad:0, relaxing_intense:2, slow_fast:3, complexity:1, visual_quality:7,
+  focus:{story:1, characters:8, action:2}, era:'modern', realistic_fantasy:2,
+  tags:['funny','feel-good'] },
+];
+
+/* ==========================================================================
+   MAPPATURA EURISTICA GENERE → ASSI
+   Usata per stimare AUTOMATICAMENTE gli assi psicologici (light_serious,
+   motivating_sad, ecc.) per i titoli scaricati in tempo reale da MyAnimeList
+   via Jikan, che non hanno un punteggio "curato a mano" come i 28 di ANIME_DB.
+   È una stima euristica, meno precisa dei titoli curati, ma permette di
+   allargare il catalogo a centinaia di anime reali invece di restare fissi.
+   Ogni voce esprime DELTA rispetto al valore neutro 5 (scala 0-10).
+   ========================================================================== */
+const GENRE_AXIS_HEURISTICS = {
+  'Action':        { relaxing_intense:+3, slow_fast:+3, focus:{action:+4}, tags:['epic'] },
+  'Adventure':     { focus:{story:+2, action:+1}, tags:['epic'] },
+  'Comedy':        { light_serious:-4, tags:['funny','feel-good'] },
+  'Drama':         { light_serious:+2, motivating_sad:+2, focus:{story:+2, characters:+2}, tags:['reflective'] },
+  'Fantasy':       { realistic_fantasy:+4, era:'fantasy' },
+  'Sci-Fi':        { realistic_fantasy:+2, era:'futuristic', complexity:+1 },
+  'Mecha':         { era:'futuristic', realistic_fantasy:+2, focus:{action:+3} },
+  'Horror':        { light_serious:+3, relaxing_intense:+3, tags:['dark'] },
+  'Mystery':       { complexity:+2, focus:{story:+3}, tags:['mindblowing','reflective'] },
+  'Romance':       { motivating_sad:+1, focus:{characters:+3}, tags:['romantic'] },
+  'Slice of Life': { relaxing_intense:-3, slow_fast:-3, focus:{characters:+2}, tags:['feel-good'] },
+  'Sports':        { motivating_sad:-2, focus:{characters:+2, action:+2}, tags:['feel-good','epic'] },
+  'Supernatural':  { realistic_fantasy:+3, tags:['mindblowing'] },
+  'Thriller':      { relaxing_intense:+3, complexity:+2, tags:['dark','mindblowing'] },
+  'Psychological': { complexity:+3, light_serious:+3, tags:['dark','reflective','mindblowing'] },
+  'Historical':    { era:'medieval', realistic_fantasy:-2 },
+  'Military':      { light_serious:+2, relaxing_intense:+2 },
+  'School':        { light_serious:-2, realistic_fantasy:-2 },
+  'Shounen':       { focus:{action:+2}, motivating_sad:-1 },
+  'Isekai':        { realistic_fantasy:+3, era:'fantasy' },
+  'Super Power':   { focus:{action:+3} },
+  'Music':         { focus:{characters:+2} },
+  'Ecchi':         { light_serious:-2 },
+  'Demons':        { realistic_fantasy:+2, tags:['dark'] },
+  'Magic':         { realistic_fantasy:+3, era:'fantasy' },
+  'Vampire':       { tags:['dark'], realistic_fantasy:+2 },
+  'Space':         { era:'futuristic' },
+  'Samurai':       { era:'medieval' },
+  'Police':        { complexity:+1, relaxing_intense:+1 },
+  'Parody':        { light_serious:-3, tags:['funny'] },
+  'Kids':          { light_serious:-3, complexity:-3 },
+  'Josei':         { focus:{characters:+2} },
+  'Seinen':        { light_serious:+2 },
+  'Shoujo':        { focus:{characters:+2}, tags:['romantic'] },
+  'Award Winning': { complexity:+1 },
+  'Suspense':      { relaxing_intense:+3, complexity:+1, tags:['mindblowing'] },
+  'Gourmet':       { light_serious:-3, tags:['feel-good'] },
+};
+
+function clamp10(v){ return Math.max(0, Math.min(10, v)); }
+
+function deriveAxesFromJikan(item){
+  const base = {
+    light_serious:5, motivating_sad:5, relaxing_intense:5, slow_fast:5, complexity:5,
+    focus:{story:5, characters:5, action:5}, era:'modern', realistic_fantasy:3, tags:[],
+  };
+  const labels = [
+    ...(item.genres||[]), ...(item.themes||[]), ...(item.demographics||[])
+  ].map(g=>g.name);
+
+  labels.forEach(name=>{
+    const h = GENRE_AXIS_HEURISTICS[name];
+    if(!h) return;
+    ['light_serious','motivating_sad','relaxing_intense','slow_fast','complexity','realistic_fantasy'].forEach(ax=>{
+      if(h[ax] !== undefined) base[ax] = clamp10(base[ax] + h[ax]);
+    });
+    if(h.focus){
+      Object.keys(h.focus).forEach(f=>{ base.focus[f] = clamp10(base.focus[f] + h.focus[f]); });
+    }
+    if(h.era) base.era = h.era;
+    if(h.tags) base.tags = [...new Set([...base.tags, ...h.tags])];
+  });
+
+  // Qualità visiva stimata dall'anno di uscita (euristica, non curata a mano)
+  const year = item.year || (item.aired && item.aired.prop && item.aired.prop.from && item.aired.prop.from.year);
+  let visual_quality = 6;
+  if(year){
+    if(year >= 2018) visual_quality = 9;
+    else if(year >= 2012) visual_quality = 7;
+    else if(year >= 2005) visual_quality = 5;
+    else visual_quality = 3;
+  }
+
+  return {
+    id: 'mal-' + item.mal_id,
+    title: item.title,
+    mal_id: item.mal_id,
+    episodes: item.episodes || 12,
+    rating: item.score || 7,
+    genres: (item.genres||[]).slice(0,3).map(g=>g.name),
+    synopsis: 'Scheda sincronizzata dal catalogo live di MyAnimeList — apri la fonte per la sinossi completa.',
+    visual_quality,
+    ...base,
+    isAutoGenerated: true,
+  };
+}
+/* ==========================================================================
+   QUESTIONS
+   Ogni domanda produce un pezzo del profilo utente (userProfile) usato
+   dal motore di scoring in app.js
+   ========================================================================== */
+const QUESTIONS = [
+  {
+    id:'mood', icon:'🌗',
+    title:'Che atmosfera cerchi stasera?',
+    sub:'Definisce il tono generale del titolo che ti verrà proposto.',
+    type:'single',
+    options:[
+      { label:'Leggera e divertente', desc:'Voglio staccare la spina', emoji:'☀️', value:{light_serious:1} },
+      { label:'Seria e profonda', desc:'Voglio qualcosa che mi scuota', emoji:'🌑', value:{light_serious:9} },
+      { label:'Un equilibrio tra le due', desc:'Dipende dal momento', emoji:'⚖️', value:{light_serious:5} },
+    ]
+  },
+  {
+    id:'motiv', icon:'💭',
+    title:'Motivante o commovente?',
+    sub:'Alcune storie ti caricano, altre ti spezzano il cuore.',
+    type:'single',
+    options:[
+      { label:'Motivante ed energico', desc:'Voglio uscirne carico', emoji:'🔥', value:{motivating_sad:1} },
+      { label:'Toccante e malinconico', desc:'Va bene anche piangere', emoji:'🌧️', value:{motivating_sad:9} },
+      { label:'Non ho preferenze', desc:'Sorprendimi', emoji:'🎲', value:{motivating_sad:5} },
+    ]
+  },
+  {
+    id:'intensity', icon:'⚡',
+    title:'Come vuoi sentirti guardandolo?',
+    sub:'Il livello di tensione emotiva e fisica della visione.',
+    type:'single',
+    options:[
+      { label:'Rilassato', desc:'Zero stress, solo comfort', emoji:'🍵', value:{relaxing_intense:1} },
+      { label:'Con adrenalina addosso', desc:'Tensione, colpi di scena, ansia buona', emoji:'🎢', value:{relaxing_intense:9} },
+      { label:'Via di mezzo', desc:'Intenso ma non estenuante', emoji:'🌊', value:{relaxing_intense:5} },
+    ]
+  },
+  {
+    id:'pace', icon:'🏁',
+    title:'Partenza lenta o scoppiettante?',
+    sub:'Ritmo narrativo: come si costruisce la storia.',
+    type:'single',
+    options:[
+      { label:'Azione fin dal primo minuto', desc:'Niente prologhi lenti', emoji:'💥', value:{slow_fast:9} },
+      { label:'Storia che si costruisce piano', desc:'Preferisco l\u2019atmosfera al ritmo', emoji:'🐌', value:{slow_fast:1} },
+      { label:'Ritmo bilanciato', desc:'Un po\u2019 e un po\u2019', emoji:'🎯', value:{slow_fast:5} },
+    ]
+  },
+  {
+    id:'visual', icon:'🎬',
+    title:'Che comparto visivo cerchi?',
+    sub:'Fluidità delle animazioni, stile artistico, qualità tecnica.',
+    type:'single',
+    options:[
+      { label:'Moderno e fluidissimo', desc:'Animazioni da combattimento al top, stile recente', emoji:'✨', value:{visual_quality:9} },
+      { label:'Stile autoriale e distintivo', desc:'Anche non recentissimo, ma con una firma visiva forte', emoji:'🎨', value:{visual_quality:7, tag:'artistic'} },
+      { label:'Non è la mia priorità', desc:'Mi basta che la storia sia buona', emoji:'📝', value:{visual_quality:5} },
+      { label:'Vintage va benissimo', desc:'Se è un classico, lo stile datato non mi disturba', emoji:'📼', value:{visual_quality:2} },
+    ]
+  },
+  {
+    id:'length', icon:'📺',
+    title:'Quanto tempo vuoi investirci?',
+    sub:'Numero di episodi che sei disposto/a a guardare.',
+    type:'single',
+    options:[
+      { label:'Poche puntate', desc:'Serie corta o film, max 13 ep.', emoji:'🍿', value:{episodePref:'short'} },
+      { label:'Stagione media', desc:'Circa 20-30 episodi', emoji:'📅', value:{episodePref:'medium'} },
+      { label:'Serie lunga', desc:'40+ episodi, voglio immergermi', emoji:'📚', value:{episodePref:'long'} },
+      { label:'Non importa', desc:'Se mi piace, guardo tutto', emoji:'🤷', value:{episodePref:'any'} },
+    ]
+  },
+  {
+    id:'focus', icon:'🎯',
+    title:'Cosa conta di più per te?',
+    sub:'L\u2019elemento centrale che deve brillare di più.',
+    type:'single',
+    options:[
+      { label:'La trama', desc:'Voglio una storia ben scritta', emoji:'📖', value:{focus:'story'} },
+      { label:'I personaggi', desc:'Voglio affezionarmi a qualcuno', emoji:'🧑‍🤝‍🧑', value:{focus:'characters'} },
+      { label:'L\u2019azione', desc:'Voglio scontri memorabili', emoji:'⚔️', value:{focus:'action'} },
+    ]
+  },
+  {
+    id:'complexity', icon:'🧩',
+    title:'Facile da seguire o da decifrare?',
+    sub:'Quanto sforzo cognitivo vuoi mettere nella visione.',
+    type:'single',
+    options:[
+      { label:'Facile e diretto', desc:'Guardo per staccare, non per pensare', emoji:'🟢', value:{complexity:1} },
+      { label:'Complesso, mind-bending', desc:'Adoro le trame che ti sfidano', emoji:'🌀', value:{complexity:9} },
+      { label:'Un giusto compromesso', desc:'Impegnativo ma non estenuante', emoji:'🔷', value:{complexity:5} },
+    ]
+  },
+  {
+    id:'emotion', icon:'❤️‍🔥',
+    title:'Cosa vuoi provare?',
+    sub:'Seleziona fino a 2 sensazioni che vuoi ritrovare.',
+    type:'multi', max:2,
+    options:[
+      { label:'Risate', desc:'', emoji:'😂', value:{tag:'funny'} },
+      { label:'Commozione / pianto', desc:'', emoji:'😭', value:{tag:'sad'} },
+      { label:'Riflessione', desc:'', emoji:'🤔', value:{tag:'reflective'} },
+      { label:'Colpi di scena assurdi', desc:'', emoji:'🤯', value:{tag:'mindblowing'} },
+      { label:'Leggerezza e buonumore', desc:'', emoji:'🌈', value:{tag:'feel-good'} },
+      { label:'Atmosfera cupa', desc:'', emoji:'🕯️', value:{tag:'dark'} },
+    ]
+  },
+  {
+    id:'setting', icon:'🗺️',
+    title:'In che mondo vuoi immergerti?',
+    sub:'L\u2019ambientazione della storia.',
+    type:'single',
+    options:[
+      { label:'Realistico / quotidiano', desc:'Il nostro mondo, vita vera', emoji:'🏙️', value:{era:'modern', realistic_fantasy:1} },
+      { label:'Fantasy / magico', desc:'Mondi inventati, magia, mostri', emoji:'🐉', value:{era:'fantasy', realistic_fantasy:9} },
+      { label:'Futuristico / sci-fi', desc:'Tecnologia, spazio, robot', emoji:'🛸', value:{era:'futuristic', realistic_fantasy:5} },
+      { label:'Storico / medievale', desc:'Epoche passate', emoji:'🏰', value:{era:'medieval', realistic_fantasy:2} },
+    ]
+  },
+];
+
+</script>
+<script>
+/* ==========================================================================
+   ANIME DECISION FINDER — APP LOGIC
+   ========================================================================== */
+(function(){
+
+const MAX_SCORE = computeMaxScore();
+
+function getCatalog(){
+  const seen = new Set(ANIME_DB.map(a=>a.mal_id));
+  const extra = state.expandedPool.filter(a => !seen.has(a.mal_id));
+  return [...ANIME_DB, ...extra];
+}
+
+const state = {
+  step: 0,
+  answers: {},            // questionId -> selected option value(s) merged
+  profile: {},            // accumulated user profile
+  tagList: [],            // selected emotion tags
+  results: [],            // ranked anime with score
+  resultOffset: 0,        // pagination cursor for "mostra altri"
+  rejected: new Set(),    // rejected anime ids (this session)
+  watchlist: [],          // saved anime ids
+  enrichCache: {},        // mal_id -> jikan data
+  swipeDeck: [],
+  swipeIndex: 0,
+  usedFallback: false,
+  expandedPool: [],       // titoli extra scaricati live da MyAnimeList (assi stimati)
+  expandedPoolStatus: 'idle', // idle | loading | ready | error
+};
+
+/* ---------------- helpers ---------------- */
+const $ = sel => document.querySelector(sel);
+const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+function showScreen(id){
+  $$('.screen').forEach(s=>s.classList.remove('active'));
+  $('#'+id).classList.add('active');
+}
+
+/* ==========================================================================
+   SCORING ENGINE
+   ========================================================================== */
+function computeMaxScore(){
+  // rough theoretical max used only for percentage normalization
+  return 6*10 /*axes incl. visual_quality*/ + 10 /*episodes*/ + 15 /*focus*/ + 10 /*era*/ + 5 /*realism*/ + 24 /*tags x3*/;
+}
+
+function episodeMatchScore(episodes, pref){
+  if(!pref || pref === 'any') return 5;
+  if(pref === 'short') return episodes <= 13 ? 10 : (episodes <= 26 ? 4 : 0);
+  if(pref === 'medium') return (episodes > 13 && episodes <= 30) ? 10 : (episodes <= 13 || episodes <=40 ? 5 : 1);
+  if(pref === 'long') return episodes >= 40 ? 10 : (episodes >= 26 ? 4 : 0);
+  return 5;
+}
+
+function scoreAnime(profile, anime){
+  let score = 0;
+  const axes = ['light_serious','motivating_sad','relaxing_intense','slow_fast','complexity','visual_quality'];
+  axes.forEach(ax=>{
+    const uv = (profile[ax] === undefined) ? 5 : profile[ax];
+    score += (10 - Math.abs(uv - anime[ax]));
+  });
+
+  score += episodeMatchScore(anime.episodes, profile.episodePref);
+
+  if(profile.focus){
+    score += anime.focus[profile.focus] * 1.5;
+  } else {
+    score += 7.5;
+  }
+
+  if(profile.era){
+    if(anime.era === profile.era) score += 10;
+    else if(profile.era === 'fantasy' && anime.realistic_fantasy >= 6) score += 5;
+    else if(profile.era === 'modern' && anime.era === 'futuristic') score += 3;
+    else score += 1;
+  } else {
+    score += 5;
+  }
+
+  const urf = (profile.realistic_fantasy === undefined) ? 5 : profile.realistic_fantasy;
+  score += (10 - Math.abs(urf - anime.realistic_fantasy)) * 0.5;
+
+  const tags = profile.tags || [];
+  tags.forEach(t=>{
+    if(anime.tags.includes(t)) score += 8;
+  });
+
+  return score;
+}
+
+function rankAll(profile){
+  return getCatalog()
+    .filter(a => !state.rejected.has(a.id))
+    .map(a => ({ anime:a, score: scoreAnime(profile, a) }))
+    .sort((a,b) => b.score - a.score);
+}
+
+function liveCompatibleCount(){
+  const ranked = rankAll(state.profile);
+  const threshold = MAX_SCORE * 0.5;
+  const n = ranked.filter(r => r.score >= threshold).length;
+  return Math.max(n, 1);
+}
+
+/* ==========================================================================
+   EXPLANATION GENERATOR
+   ========================================================================== */
+const AXIS_LABELS = {
+  light_serious: v => v <= 3 ? 'un tono leggero e spensierato' : (v >= 7 ? 'un tono serio e profondo' : 'un tono bilanciato'),
+  motivating_sad: v => v <= 3 ? 'un\u2019energia motivante' : (v >= 7 ? 'toni malinconici e toccanti' : 'un mix emotivo bilanciato'),
+  relaxing_intense: v => v <= 3 ? 'un\u2019atmosfera rilassante' : (v >= 7 ? 'tensione e intensità costanti' : 'un ritmo emotivo moderato'),
+  slow_fast: v => v <= 3 ? 'una costruzione narrativa lenta e curata' : (v >= 7 ? 'azione fin dai primi minuti' : 'un ritmo narrativo bilanciato'),
+  complexity: v => v <= 3 ? 'una trama facile da seguire' : (v >= 7 ? 'una trama complessa e stratificata' : 'una trama moderatamente impegnativa'),
+  visual_quality: v => v <= 3 ? 'uno stile visivo vintage/classico' : (v >= 7 ? 'un comparto visivo moderno e fluidissimo' : 'una qualità visiva nella media'),
+};
+const FOCUS_LABELS = { story:'sulla qualità della trama', characters:'sulla profondità dei personaggi', action:'su combattimenti e azione' };
+const ERA_LABELS = { modern:'ambientazione realistica/quotidiana', fantasy:'un mondo fantasy', futuristic:'un\u2019ambientazione futuristica/sci-fi', medieval:'un\u2019ambientazione storica' };
+const TAG_LABELS = { funny:'ti fa ridere', sad:'ti fa commuovere', reflective:'ti fa riflettere', mindblowing:'ha colpi di scena spiazzanti', 'feel-good':'lascia un buonumore contagioso', dark:'ha un\u2019atmosfera cupa', artistic:'ha uno stile visivo distintivo e autoriale', romantic:'ha una forte componente romantica', epic:'ha un respiro epico' };
+
+function explainMatch(profile, anime){
+  const reasons = [];
+  const axes = ['light_serious','motivating_sad','relaxing_intense','slow_fast','complexity','visual_quality'];
+  const diffs = axes.map(ax=>({ ax, diff: Math.abs((profile[ax]??5) - anime[ax]) })).sort((a,b)=>a.diff-b.diff);
+  diffs.slice(0,2).forEach(d=>{
+    if(d.diff <= 3){
+      reasons.push(`Ha ${AXIS_LABELS[d.ax](anime[d.ax])}, esattamente come cercavi.`);
+    }
+  });
+  if(profile.focus && anime.focus[profile.focus] >= 7){
+    reasons.push(`Punta forte ${FOCUS_LABELS[profile.focus]}, il tuo criterio principale.`);
+  }
+  if(profile.era && anime.era === profile.era){
+    reasons.push(`È ambientato in ${ERA_LABELS[profile.era]}, come preferito.`);
+  }
+  const tags = profile.tags || [];
+  const matchedTags = tags.filter(t=>anime.tags.includes(t));
+  if(matchedTags.length){
+    reasons.push(`${matchedTags.map(t=>TAG_LABELS[t]).join(' e ')}, proprio le sensazioni che hai scelto.`);
+  }
+  if(profile.episodePref && profile.episodePref !== 'any'){
+    const label = profile.episodePref === 'short' ? 'breve, adatta al tempo che vuoi investire' : (profile.episodePref === 'long' ? 'lunga, per immergerti a fondo' : 'di lunghezza media, come richiesto');
+    if(episodeMatchScore(anime.episodes, profile.episodePref) >= 8){
+      reasons.push(`Con ${anime.episodes} episodi è una serie ${label}.`);
+    }
+  }
+  if(reasons.length === 0){
+    reasons.push('È uno dei titoli più equilibrati rispetto all\u2019insieme delle tue risposte.');
+  }
+  return reasons.slice(0,4);
+}
+
+/* ==========================================================================
+   QUIZ RENDERING
+   ========================================================================== */
+function renderProgress(){
+  const track = $('#progress-track');
+  track.innerHTML = '';
+  QUESTIONS.forEach((q,i)=>{
+    const seg = document.createElement('div');
+    seg.className = 'quiz-progress-seg' + (i < state.step ? ' done' : (i === state.step ? ' current' : ''));
+    track.appendChild(seg);
+  });
+  $('#quiz-step-label').textContent = `Domanda ${state.step+1}/${QUESTIONS.length}`;
+  animateLiveCounter();
+}
+
+let counterAnimHandle = null;
+function animateLiveCounter(){
+  const el = $('#live-counter');
+  const target = liveCompatibleCount();
+  const start = parseInt(el.textContent) || ANIME_DB.length;
+  if(start === target) { el.textContent = target; return; }
+  let cur = start;
+  clearInterval(counterAnimHandle);
+  const step = start < target ? 1 : -1;
+  counterAnimHandle = setInterval(()=>{
+    cur += step;
+    el.textContent = cur;
+    if(cur === target) clearInterval(counterAnimHandle);
+  }, 25);
+}
+
+function renderQuestion(idx, direction){
+  const stage = $('#quiz-stage');
+  stage.innerHTML = '';
+  const q = QUESTIONS[idx];
+  const block = document.createElement('div');
+  block.className = 'q-block active';
+  block.innerHTML = `
+    <span class="q-icon">${q.icon}</span>
+    <div class="q-title">${q.title}</div>
+    <div class="q-sub">${q.sub}</div>
+    ${q.type === 'multi' ? `<div class="q-multi-hint">Puoi selezionare fino a ${q.max} opzioni</div>` : ''}
+    <div class="q-options"></div>
+  `;
+  stage.appendChild(block);
+  const optWrap = block.querySelector('.q-options');
+  const selected = state.answers[q.id] ? (Array.isArray(state.answers[q.id]) ? state.answers[q.id] : [state.answers[q.id]]) : [];
+
+  q.options.forEach((opt, i)=>{
+    const isSel = selected.includes(i);
+    const el = document.createElement('button');
+    el.className = 'q-option' + (isSel ? ' selected' : '');
+    el.innerHTML = `
+      <span class="opt-emoji">${opt.emoji}</span>
+      <span class="opt-text">
+        <span class="opt-label">${opt.label}</span>
+        ${opt.desc ? `<span class="opt-desc">${opt.desc}</span>` : ''}
+      </span>
+      <span class="opt-check"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
+    `;
+    el.addEventListener('click', ()=>handleOptionClick(q, i, el));
+    optWrap.appendChild(el);
+  });
+
+  updateNextButtonState(q);
+}
+
+function handleOptionClick(q, i, el){
+  if(q.type === 'single'){
+    state.answers[q.id] = i;
+    Array.from(el.parentElement.children).forEach(c=>c.classList.remove('selected'));
+    el.classList.add('selected');
+    // Nessun auto-avanzamento: l'utente conferma con il bottone "Avanti"
+  } else {
+    let arr = Array.isArray(state.answers[q.id]) ? state.answers[q.id].slice() : [];
+    const pos = arr.indexOf(i);
+    if(pos >= 0){
+      arr.splice(pos,1);
+      el.classList.remove('selected');
+    } else {
+      if(arr.length >= q.max){
+        // replace oldest
+        const removedIdx = arr.shift();
+        const removedEl = el.parentElement.children[removedIdx];
+        if(removedEl) removedEl.classList.remove('selected');
+      }
+      arr.push(i);
+      el.classList.add('selected');
+    }
+    state.answers[q.id] = arr;
+  }
+  updateNextButtonState(q);
+}
+
+function updateNextButtonState(q){
+  const btn = $('#btn-next');
+  const ans = state.answers[q.id];
+  const hasAnswer = q.type === 'multi' ? (Array.isArray(ans) && ans.length > 0) : (ans !== undefined);
+  const isLast = state.step === QUESTIONS.length - 1;
+  btn.classList.remove('hidden');
+  btn.classList.toggle('q-nav-next-disabled', !hasAnswer);
+  btn.textContent = isLast ? 'Trova il mio anime' : 'Avanti';
+
+  if(q.type === 'multi'){
+    const count = Array.isArray(ans) ? ans.length : 0;
+    const hint = document.querySelector('.q-multi-hint');
+    if(hint) hint.textContent = `Hai selezionato ${count} di ${q.max} opzioni disponibili`;
+  }
+}
+
+function rebuildProfile(){
+  state.profile = {};
+  QUESTIONS.forEach(q=>{
+    if(state.answers[q.id] !== undefined) applyAnswerToProfile(q);
+  });
+}
+
+function applyAnswerToProfile(q){
+  const ans = state.answers[q.id];
+  if(ans === undefined) return;
+  if(q.type === 'single'){
+    const { tag, ...rest } = q.options[ans].value;
+    Object.assign(state.profile, rest);
+    if(tag){
+      const existing = state.profile.tags || [];
+      if(!existing.includes(tag)) state.profile.tags = [...existing, tag];
+    }
+  } else {
+    const arr = Array.isArray(ans) ? ans : [ans];
+    const tags = arr.map(i => q.options[i].value.tag).filter(Boolean);
+    const existing = (state.profile.tags || []).filter(t => !QUESTIONS.find(qq=>qq.id===q.id).options.some(o=>o.value.tag===t));
+    state.profile.tags = [...new Set([...existing, ...tags])];
+  }
+}
+
+function goNext(){
+  const q = QUESTIONS[state.step];
+  const ans = state.answers[q.id];
+  const hasAnswer = q.type === 'multi' ? (Array.isArray(ans) && ans.length > 0) : (ans !== undefined);
+  if(!hasAnswer) return;
+  applyAnswerToProfile(q);
+
+  if(state.step < QUESTIONS.length - 1){
+    state.step++;
+    renderProgress();
+    renderQuestion(state.step);
+    $('#btn-back').style.visibility = state.step === 0 ? 'hidden' : 'visible';
+  } else {
+    finishQuiz();
+  }
+}
+
+function goBack(){
+  if(state.step === 0) return;
+  state.step--;
+  // Funzione "salva-errore": annulla la risposta data alla domanda a cui si torna,
+  // così l'utente può correggerla liberamente.
+  const q = QUESTIONS[state.step];
+  delete state.answers[q.id];
+  rebuildProfile();
+  renderProgress();
+  renderQuestion(state.step);
+  $('#btn-back').style.visibility = state.step === 0 ? 'hidden' : 'visible';
+}
+
+function startQuiz(){
+  state.step = 0;
+  state.answers = {};
+  state.profile = {};
+  state.rejected = new Set();
+  state.resultOffset = 0;
+  state.usedFallback = false;
+  showScreen('screen-quiz');
+  renderProgress();
+  renderQuestion(0);
+  $('#btn-back').style.visibility = 'hidden';
+}
+
+/* ==========================================================================
+   FINISH → ANALYZE → RESULTS
+   ========================================================================== */
+const SCAN_LOGS = [
+  'Analisi profilo utente…',
+  'Confronto assi psicologici…',
+  'Peso preferenze narrative…',
+  'Calcolo compatibilità catalogo…',
+  'Ordinamento risultati finali…',
+];
+
+function finishQuiz(){
+  showScreen('screen-analyzing');
+  let i = 0;
+  const logEl = $('#scan-log');
+  logEl.textContent = SCAN_LOGS[0];
+  const iv = setInterval(()=>{
+    i++;
+    if(i < SCAN_LOGS.length){ logEl.textContent = SCAN_LOGS[i]; }
+  }, 380);
+
+  setTimeout(()=>{
+    clearInterval(iv);
+    state.results = rankAll(state.profile);
+    state.resultOffset = 0;
+    showResults(true);
+  }, SCAN_LOGS.length * 380 + 200);
+}
+
+function showResults(isFirst){
+  showScreen('screen-result');
+  const top = state.results[0];
+  const threshold = MAX_SCORE * 0.55;
+  state.usedFallback = !top || top.score < threshold;
+
+  $('#result-eyebrow').textContent = state.usedFallback ? 'Nessuna corrispondenza fortissima' : 'Basato sulle tue risposte';
+
+  const bannerSlot = $('#fallback-banner-slot');
+  bannerSlot.innerHTML = '';
+  let list;
+  if(state.usedFallback){
+    bannerSlot.innerHTML = `<div class="fallback-banner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      <span>Le tue preferenze sono piuttosto specifiche: non c\u2019è un match fortissimo, quindi ti proponiamo i titoli più popolari e meglio valutati che si avvicinano di più al tuo profilo.</span>
+    </div>`;
+    list = [...state.results].sort((a,b)=> b.anime.rating - a.anime.rating).slice(0,3);
+  } else {
+    list = state.results.slice(state.resultOffset, state.resultOffset + 3);
+  }
+  renderResultCards(list);
+}
+
+function renderResultCards(list){
+  const wrap = $('#result-cards');
+  wrap.innerHTML = '';
+  list.forEach((entry, idx)=>{
+    const card = buildAnimeCard(entry, idx);
+    wrap.appendChild(card);
+    enrichCard(entry.anime, card);
+  });
+}
+
+function pct(score){
+  return Math.max(5, Math.min(99, Math.round((score / MAX_SCORE) * 100)));
+}
+
+/* ==========================================================================
+   ESPANSIONE CATALOGO LIVE (MyAnimeList via Jikan)
+   Scarica in background le classifiche pubbliche di MAL e stima gli assi
+   di scoring con l'euristica per genere, per allargare il pool di
+   raccomandazione ben oltre i 28 titoli curati a mano.
+   ========================================================================== */
+async function fetchExpandedCatalog(pages = 6){
+  state.expandedPoolStatus = 'loading';
+  const collected = [];
+  for(let page = 1; page <= pages; page++){
+    try{
+      const res = await fetch(`https://api.jikan.moe/v4/top/anime?page=${page}&filter=bypopularity`);
+      if(!res.ok) throw new Error('http '+res.status);
+      const json = await res.json();
+      (json.data || []).forEach(item=>{
+        if(!item.mal_id) return;
+        collected.push(deriveAxesFromJikan(item));
+        state.enrichCache[item.mal_id] = item; // riusa i dati già scaricati (niente doppio fetch per l'immagine)
+      });
+    }catch(err){
+      // Jikan ha un limite di richieste/secondo: se una pagina fallisce, teniamo quelle già raccolte
+      break;
+    }
+    await new Promise(r => setTimeout(r, 400)); // rispetta il rate limit di Jikan
+  }
+  state.expandedPool = collected;
+  state.expandedPoolStatus = collected.length ? 'ready' : 'error';
+  updateCatalogStat();
+}
+
+function updateCatalogStat(){
+  const el = $('#stat-total');
+  if(!el) return;
+  const total = getCatalog().length;
+  el.textContent = total;
+  const wrap = document.querySelector('.intro-stat span');
+  if(state.expandedPoolStatus === 'loading' && wrap) wrap.textContent = 'Catalogo (sincronizzo MAL…)';
+  else if(wrap) wrap.textContent = 'Catalogo';
+}
+
+function buildAnimeCard(entry, rankIdx){
+  const { anime, score } = entry;
+  const matchPct = pct(score);
+  const isLow = matchPct < 55;
+  const card = document.createElement('div');
+  card.className = 'anime-card';
+  card.dataset.id = anime.id;
+  const isSaved = state.watchlist.includes(anime.id);
+  const reasons = explainMatch(state.profile, anime);
+
+  card.innerHTML = `
+    <div class="ac-media">
+      <div class="ac-placeholder">${anime.title.charAt(0)}</div>
+      <img class="ac-real-img hidden" alt="${anime.title}">
+      <div class="ac-rank">#${rankIdx+1} match</div>
+      ${anime.isAutoGenerated ? '<div class="ac-auto-badge" title="Assi di compatibilità stimati automaticamente dai generi MAL, non curati a mano">stima auto</div>' : ''}
+      <div class="ac-match ${isLow ? 'low' : ''}">${matchPct}% compatibile</div>
+      <button class="ac-save ${isSaved ? 'saved' : ''}" aria-label="Salva">
+        <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+      </button>
+      <div class="ac-title-overlay"><h3>${anime.title}</h3></div>
+    </div>
+    <div class="ac-body">
+      <div class="ac-genres">${anime.genres.map(g=>`<span class="ac-genre-tag">${g}</span>`).join('')}</div>
+      <div class="ac-meta-row">
+        <span><b class="ac-ep">${anime.episodes}</b> episodi</span>
+        <span>★ <b class="ac-rating">${anime.rating}</b></span>
+      </div>
+      <p class="ac-synopsis">${anime.synopsis}</p>
+      <div class="ac-why">
+        <button class="ac-why-toggle">
+          <span>Perché te lo consigliamo</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <ul class="ac-why-list">${reasons.map(r=>`<li>${r}</li>`).join('')}</ul>
+      </div>
+      <div class="ac-actions">
+        <button class="reject">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Non fa per me
+        </button>
+        <button class="accept-save">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+          Lo guarderò
+        </button>
+      </div>
+    </div>
+  `;
+
+  card.querySelector('.ac-why-toggle').addEventListener('click', e=>{
+    e.currentTarget.classList.toggle('open');
+    card.querySelector('.ac-why-list').classList.toggle('open');
+  });
+  card.querySelector('.ac-save').addEventListener('click', ()=>toggleWatchlist(anime.id, card.querySelector('.ac-save'), animeToMeta(anime)));
+  card.querySelector('.accept-save').addEventListener('click', ()=>{
+    addToWatchlist(anime.id, animeToMeta(anime));
+    card.querySelector('.ac-save').classList.add('saved');
+    flashButton(card.querySelector('.accept-save'), 'Salvato ✓');
+  });
+  card.querySelector('.reject').addEventListener('click', ()=>rejectAnime(anime.id, card));
+
+  return card;
+}
+
+function animeToMeta(anime){
+  return { title: anime.title, mal_id: anime.mal_id, episodes: anime.episodes, rating: anime.rating };
+}
+
+function flashButton(btn, text){
+  const orig = btn.innerHTML;
+  btn.innerHTML = text;
+  setTimeout(()=>{ btn.innerHTML = orig; }, 1200);
+}
+
+function rejectAnime(id, cardEl){
+  state.rejected.add(id);
+  cardEl.style.transition = 'opacity .25s ease, transform .25s ease';
+  cardEl.style.opacity = '0';
+  cardEl.style.transform = 'translateX(-16px) scale(0.97)';
+  setTimeout(()=>{
+    state.results = rankAll(state.profile);
+    state.resultOffset = 0;
+    showResults(false);
+  }, 220);
+}
+
+/* ---- Jikan enrichment (image, live episode count, live score) ---- */
+async function enrichCard(anime, cardEl){
+  try{
+    let data = state.enrichCache[anime.mal_id];
+    if(!data){
+      const res = await fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`);
+      if(!res.ok) throw new Error('not ok');
+      const json = await res.json();
+      data = json.data;
+      state.enrichCache[anime.mal_id] = data;
+    }
+    if(data && data.images && data.images.jpg && data.images.jpg.large_image_url){
+      const img = cardEl.querySelector('.ac-real-img');
+      img.src = data.images.jpg.large_image_url;
+      img.onload = ()=>{
+        img.classList.remove('hidden');
+        const ph = cardEl.querySelector('.ac-placeholder');
+        if(ph) ph.style.display = 'none';
+      };
+    }
+    if(data && data.episodes){
+      const epEl = cardEl.querySelector('.ac-ep');
+      if(epEl) epEl.textContent = data.episodes;
+    }
+    if(data && data.score){
+      const rEl = cardEl.querySelector('.ac-rating');
+      if(rEl) rEl.textContent = data.score;
+    }
+  }catch(err){
+    // graceful degrade: keep placeholder + local fallback data
+  }
+}
+
+/* ==========================================================================
+   WATCHLIST (persisted via window.storage when available)
+   ========================================================================== */
+async function loadWatchlist(){
+  try{
+    const res = await window.storage.get('watchlist');
+    if(res && res.value){
+      state.watchlist = JSON.parse(res.value);
+    }
+  }catch(e){ /* no stored watchlist yet or storage unavailable */ }
+  updateWatchlistBadge();
+}
+
+async function persistWatchlist(){
+  try{
+    await window.storage.set('watchlist', JSON.stringify(state.watchlist));
+  }catch(e){ /* storage unavailable, keep in-memory only */ }
+}
+
+function addToWatchlist(id, meta){
+  if(meta){
+    state.externalWatchlistMeta = state.externalWatchlistMeta || {};
+    state.externalWatchlistMeta[id] = meta;
+  }
+  if(!state.watchlist.includes(id)){
+    state.watchlist.push(id);
+    persistWatchlist();
+    updateWatchlistBadge();
+  }
+}
+function removeFromWatchlist(id){
+  state.watchlist = state.watchlist.filter(w=>w!==id);
+  persistWatchlist();
+  updateWatchlistBadge();
+  renderDrawer();
+}
+function toggleWatchlist(id, btnEl, meta){
+  if(state.watchlist.includes(id)){
+    removeFromWatchlist(id);
+    btnEl.classList.remove('saved');
+  } else {
+    addToWatchlist(id, meta);
+    btnEl.classList.add('saved');
+  }
+}
+function updateWatchlistBadge(){
+  const badge = $('#watchlist-count');
+  if(state.watchlist.length > 0){
+    badge.textContent = state.watchlist.length;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function renderDrawer(){
+  const content = $('#drawer-content');
+  if(state.watchlist.length === 0){
+    content.innerHTML = `<div class="drawer-empty">La tua watchlist è vuota.<br>Salva un anime dai risultati per vederlo qui.</div>`;
+    return;
+  }
+  content.innerHTML = '';
+  state.watchlist.forEach(id=>{
+    const local = ANIME_DB.find(a=>a.id===id);
+    const external = !local && state.externalWatchlistMeta ? state.externalWatchlistMeta[id] : null;
+    if(!local && !external) return;
+    const title = local ? local.title : external.title;
+    const malId = local ? local.mal_id : external.mal_id;
+    const episodes = local ? local.episodes : (external.episodes ?? '—');
+    const rating = local ? local.rating : (external.rating ?? '—');
+
+    const item = document.createElement('div');
+    item.className = 'watch-item';
+    item.innerHTML = `
+      <img src="" alt="${title}">
+      <div class="wi-info">
+        <h4>${title}</h4>
+        <span>${episodes} ep · ★ ${rating}</span>
+      </div>
+      <button class="wi-remove"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    `;
+    const imgEl = item.querySelector('img');
+    const cached = state.enrichCache[malId];
+    if(cached && cached.images) imgEl.src = cached.images.jpg.image_url;
+    else if(malId){
+      fetch(`https://api.jikan.moe/v4/anime/${malId}`).then(r=>r.json()).then(j=>{
+        state.enrichCache[malId] = j.data;
+        if(j.data && j.data.images) imgEl.src = j.data.images.jpg.image_url;
+      }).catch(()=>{});
+    }
+    item.querySelector('.wi-remove').addEventListener('click', ()=>removeFromWatchlist(id));
+    content.appendChild(item);
+  });
+}
+
+/* ==========================================================================
+   SWIPE MODE
+   ========================================================================== */
+function enterSwipeMode(){
+  const profile = Object.keys(state.profile).length ? state.profile : {};
+  state.swipeDeck = rankAll(profile).slice(0, 12).map(r=>r.anime);
+  state.swipeIndex = 0;
+  showScreen('screen-swipe');
+  $('#swipe-sub').textContent = Object.keys(state.profile).length ? 'IN BASE AL TUO PROFILO' : 'I PIÙ POPOLARI DEL CATALOGO';
+  renderSwipeStack();
+}
+
+function renderSwipeStack(){
+  const stage = $('#swipe-stage');
+  stage.innerHTML = '';
+  const remaining = state.swipeDeck.slice(state.swipeIndex, state.swipeIndex + 3);
+  if(remaining.length === 0){
+    stage.innerHTML = `<div class="swipe-empty">Hai visto tutti i titoli suggeriti.<br><br>Controlla la tua watchlist per rivedere quelli che ti sono piaciuti 🎬</div>`;
+    return;
+  }
+  remaining.slice().reverse().forEach((anime, i)=>{
+    const depth = remaining.length - 1 - i;
+    const card = document.createElement('div');
+    card.className = 'swipe-card';
+    card.style.transform = `translateY(${depth*8}px) scale(${1 - depth*0.03})`;
+    card.style.zIndex = 10 - depth;
+    card.innerHTML = `
+      <div class="sc-media">
+        <div class="ac-placeholder">${anime.title.charAt(0)}</div>
+        <img class="hidden" alt="${anime.title}">
+        <div class="sc-info">
+          <h3>${anime.title}</h3>
+          <div class="sc-tags">${anime.genres.slice(0,3).map(g=>`<span>${g}</span>`).join('')}</div>
+        </div>
+      </div>
+      <div class="swipe-tint tint-green"></div>
+      <div class="swipe-tint tint-red"></div>
+      <div class="swipe-stamp like">SI</div>
+      <div class="swipe-stamp nope">NO</div>
+    `;
+    stage.appendChild(card);
+    enrichSwipeCard(anime, card);
+    if(depth === 0) attachSwipeGestures(card, anime);
+  });
+}
+
+async function enrichSwipeCard(anime, cardEl){
+  try{
+    let data = state.enrichCache[anime.mal_id];
+    if(!data){
+      const res = await fetch(`https://api.jikan.moe/v4/anime/${anime.mal_id}`);
+      if(!res.ok) throw new Error('no');
+      const json = await res.json();
+      data = json.data;
+      state.enrichCache[anime.mal_id] = data;
+    }
+    if(data && data.images){
+      const img = cardEl.querySelector('img');
+      img.src = data.images.jpg.large_image_url;
+      img.onload = ()=>{
+        img.classList.remove('hidden');
+        const ph = cardEl.querySelector('.ac-placeholder');
+        if(ph) ph.style.display = 'none';
+      };
+    }
+  }catch(e){}
+}
+
+function attachSwipeGestures(card, anime){
+  let startX = 0, curX = 0, dragging = false;
+  const likeStamp = card.querySelector('.like');
+  const nopeStamp = card.querySelector('.nope');
+  const tintGreen = card.querySelector('.tint-green');
+  const tintRed = card.querySelector('.tint-red');
+
+  function onStart(x){
+    dragging = true; startX = x; card.style.transition = 'none';
+  }
+  function onMove(x){
+    if(!dragging) return;
+    curX = x - startX;
+    card.style.transform = `translateX(${curX}px) rotate(${curX/18}deg)`;
+    // Feedback cromatico istantaneo fin dal primo pixel di trascinamento
+    const intensity = Math.min(1, Math.abs(curX)/90);
+    if(curX > 0){
+      tintGreen.style.opacity = intensity;
+      tintRed.style.opacity = 0;
+    } else if(curX < 0){
+      tintRed.style.opacity = intensity;
+      tintGreen.style.opacity = 0;
+    } else {
+      tintGreen.style.opacity = 0; tintRed.style.opacity = 0;
+    }
+    likeStamp.style.opacity = curX > 30 ? Math.min(1, curX/100) : 0;
+    nopeStamp.style.opacity = curX < -30 ? Math.min(1, -curX/100) : 0;
+  }
+  function onEnd(){
+    if(!dragging) return;
+    dragging = false;
+    card.style.transition = '';
+    if(curX > 100){ resolveSwipe(anime, card, 1); }
+    else if(curX < -100){ resolveSwipe(anime, card, -1); }
+    else {
+      card.style.transform = '';
+      likeStamp.style.opacity=0; nopeStamp.style.opacity=0;
+      tintGreen.style.opacity=0; tintRed.style.opacity=0;
+    }
+    curX = 0;
+  }
+
+  card.addEventListener('mousedown', e=>onStart(e.clientX));
+  window.addEventListener('mousemove', e=>onMove(e.clientX));
+  window.addEventListener('mouseup', onEnd);
+  card.addEventListener('touchstart', e=>onStart(e.touches[0].clientX), {passive:true});
+  card.addEventListener('touchmove', e=>onMove(e.touches[0].clientX), {passive:true});
+  card.addEventListener('touchend', onEnd);
+
+  card._swipeResolve = dir => resolveSwipe(anime, card, dir);
+}
+
+function resolveSwipe(anime, card, dir){
+  const tintGreen = card.querySelector('.tint-green');
+  const tintRed = card.querySelector('.tint-red');
+  if(tintGreen && tintRed){
+    if(dir > 0){ tintGreen.style.opacity = 1; tintRed.style.opacity = 0; }
+    else { tintRed.style.opacity = 1; tintGreen.style.opacity = 0; }
+  }
+  card.style.transform = `translateX(${dir*500}px) rotate(${dir*30}deg)`;
+  card.style.opacity = '0';
+  if(dir > 0) addToWatchlist(anime.id, animeToMeta(anime));
+  state.swipeIndex++;
+  setTimeout(renderSwipeStack, 260);
+}
+
+function swipeButtonAction(dir){
+  const stage = $('#swipe-stage');
+  const topCard = stage.lastElementChild;
+  if(topCard && topCard._swipeResolve) topCard._swipeResolve(dir);
+}
+
+/* ==========================================================================
+   RICERCA ANIME (Jikan API)
+   ========================================================================== */
+let searchDebounceHandle = null;
+let searchAbortController = null;
+
+function openSearchScreen(){
+  showScreen('screen-search');
+  setTimeout(()=> $('#search-input').focus(), 250);
+}
+
+async function runSearch(query){
+  const resultsEl = $('#search-results');
+  if(!query || query.trim().length < 2){
+    resultsEl.innerHTML = `<div class="search-status">Scrivi almeno 2 caratteri per iniziare la ricerca.</div>`;
+    return;
+  }
+  resultsEl.innerHTML = `<div class="search-status"><span class="spin-mini"></span> Ricerca su MyAnimeList in corso…</div>`;
+
+  if(searchAbortController) searchAbortController.abort();
+  searchAbortController = new AbortController();
+
+  try{
+    const res = await fetch(`https://api.jikan.moe/v4/anime?q=${encodeURIComponent(query.trim())}&limit=10`, { signal: searchAbortController.signal });
+    if(!res.ok) throw new Error('Jikan error ' + res.status);
+    const json = await res.json();
+    const items = json.data || [];
+    if(items.length === 0){
+      resultsEl.innerHTML = `<div class="search-status">Nessun risultato per “${escapeHtml(query)}”.</div>`;
+      return;
+    }
+    resultsEl.innerHTML = '';
+    items.forEach(anime => resultsEl.appendChild(buildSearchResultCard(anime)));
+  }catch(err){
+    if(err.name === 'AbortError') return;
+    resultsEl.innerHTML = `<div class="search-status" style="color:var(--coral)">Errore di connessione con Jikan API. Se hai fatto molte ricerche di fila, attendi qualche secondo e riprova (limite richieste/sec).</div>`;
+  }
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function buildSearchResultCard(anime){
+  const card = document.createElement('div');
+  card.className = 'search-result-card';
+  const imgUrl = anime.images && anime.images.jpg ? (anime.images.jpg.image_url || '') : '';
+  const localMatch = ANIME_DB.find(a => a.mal_id === anime.mal_id);
+  const isSaved = localMatch ? state.watchlist.includes(localMatch.id) : state.watchlist.includes('mal-'+anime.mal_id);
+  card.innerHTML = `
+    <img src="${imgUrl}" alt="${escapeHtml(anime.title)}" onerror="this.style.background='linear-gradient(135deg,#241f3d,#171626)'">
+    <div class="src-info">
+      <h4>${escapeHtml(anime.title)}</h4>
+      <div class="src-meta">
+        <span>★ <b>${anime.score ?? '—'}</b></span>
+        <span>${anime.episodes ? anime.episodes + ' ep' : (anime.status || 'N/D')}</span>
+        <span>${anime.type || ''}</span>
+      </div>
+      <div class="src-actions">
+        <button class="save-search ${isSaved ? 'saved' : ''}">
+          <svg viewBox="0 0 24 24" fill="${isSaved ? 'currentColor':'none'}" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg>
+          ${isSaved ? 'Salvato' : 'Salva'}
+        </button>
+        <a class="mal-link" href="${anime.url}" target="_blank" rel="noopener">Apri su MAL ↗</a>
+      </div>
+    </div>
+  `;
+  const saveBtn = card.querySelector('.save-search');
+  saveBtn.addEventListener('click', ()=>{
+    const id = localMatch ? localMatch.id : 'mal-'+anime.mal_id;
+    // Cache i dati esterni così la watchlist può mostrare titolo/immagine anche per anime fuori catalogo
+    state.enrichCache[anime.mal_id] = anime;
+    if(!localMatch) state.externalWatchlistMeta = state.externalWatchlistMeta || {};
+    if(!localMatch) state.externalWatchlistMeta[id] = { title: anime.title, mal_id: anime.mal_id, episodes: anime.episodes, rating: anime.score };
+    if(state.watchlist.includes(id)){
+      removeFromWatchlist(id);
+      saveBtn.classList.remove('saved');
+      saveBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg> Salva`;
+    } else {
+      addToWatchlist(id);
+      saveBtn.classList.add('saved');
+      saveBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 000-7.8z"/></svg> Salvato`;
+    }
+  });
+  return card;
+}
+
+/* ==========================================================================
+   EVENT WIRING
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadWatchlist();
+  fetchExpandedCatalog(); // scarica in background centinaia di titoli reali da MAL
+
+  $('#btn-start').addEventListener('click', startQuiz);
+  $('#btn-next').addEventListener('click', goNext);
+  $('#btn-back').addEventListener('click', goBack);
+
+  $('#btn-more').addEventListener('click', ()=>{
+    state.resultOffset += 3;
+    if(state.resultOffset >= state.results.length) state.resultOffset = 0;
+    showResults(false);
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  $('#btn-regenerate').addEventListener('click', ()=>{
+    // shuffle among close-scoring candidates for variety
+    const pool = state.results.slice(0, Math.min(9, state.results.length));
+    for(let i = pool.length -1; i>0; i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [pool[i], pool[j]] = [pool[j], pool[i]];
+    }
+    state.results = [...pool, ...state.results.slice(pool.length)];
+    state.resultOffset = 0;
+    showResults(false);
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  $('#btn-restart').addEventListener('click', startQuiz);
+
+  $('#btn-watchlist').addEventListener('click', ()=>{
+    renderDrawer();
+    $('#drawer').classList.add('open');
+    $('#drawer-overlay').classList.add('open');
+  });
+  $('#btn-close-drawer').addEventListener('click', closeDrawer);
+  $('#drawer-overlay').addEventListener('click', closeDrawer);
+  function closeDrawer(){
+    $('#drawer').classList.remove('open');
+    $('#drawer-overlay').classList.remove('open');
+  }
+
+  $('#btn-swipe-mode').addEventListener('click', enterSwipeMode);
+  $('#btn-exit-swipe').addEventListener('click', ()=>{
+    showScreen(Object.keys(state.profile).length ? 'screen-result' : 'screen-intro');
+  });
+  $('#swipe-like').addEventListener('click', ()=>swipeButtonAction(1));
+  $('#swipe-nope').addEventListener('click', ()=>swipeButtonAction(-1));
+
+  $('#btn-search').addEventListener('click', openSearchScreen);
+  $('#btn-search-home').addEventListener('click', openSearchScreen);
+  $('#btn-search-back').addEventListener('click', ()=>{
+    showScreen(Object.keys(state.profile).length ? 'screen-result' : 'screen-intro');
+  });
+  $('#search-input').addEventListener('input', (e)=>{
+    clearTimeout(searchDebounceHandle);
+    const q = e.target.value;
+    searchDebounceHandle = setTimeout(()=>runSearch(q), 450);
+  });
+  $('#search-input').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      clearTimeout(searchDebounceHandle);
+      runSearch(e.target.value);
+    }
+  });
+
+  $('#stat-total').textContent = ANIME_DB.length;
+  $('#stat-questions').textContent = QUESTIONS.length;
+});
+
+})();
+
+</script>
+</body>
+</html>
